@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+flask = "*"
+flask-cors = "*"
+numpy = "*"
+matplotlib = "*"
+sklearn = "*"
+tensorflow = "==2.1.0"
+nibabel = "*"
+sqlalchemy = "*"
+psycopg2-binary = "*"
+flask-jsonpify = "*"
+flask-sqlalchemy = "*"
+flask-restful = "*"
+flask-pymongo = "*"
+
+[requires]
+python_version = "3.6"

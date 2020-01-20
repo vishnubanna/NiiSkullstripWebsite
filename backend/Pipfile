@@ -19,6 +19,11 @@ flask-jsonpify = "*"
 flask-sqlalchemy = "*"
 flask-restful = "*"
 flask-pymongo = "*"
+firebase = "*"
+python-jwt = "*"
+gcloud = "*"
+sseclient = "*"
+firebase-admin = "*"
 
 [requires]
 python_version = "3.6"

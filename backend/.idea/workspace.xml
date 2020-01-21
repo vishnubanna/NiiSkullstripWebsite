@@ -2,8 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="06c1c06d-5095-46f5-bc05-56fedf9b955c" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/jsonconst/model.h5" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/jsonconst/model.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/mainAPI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/static/sub-A00064081_ses-NFB3_T1w&gt;nii&gt;gz_affine.npy" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/static/sub-A00064081_ses-NFB3_T1w&gt;nii&gt;gz_data.npy" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/static/sub-A00064081_ses-NFB3_T1w&gt;nii&gt;gz_slice.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -31,15 +37,19 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/src/jsonconst" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/jsonconst" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.mainAPI">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="backend" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -61,8 +71,30 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="mainAPI" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="backend" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/mainAPI.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.mainAPI" />
         <item itemvalue="Python.main" />
       </list>
     </recent_temporary>
@@ -90,36 +122,52 @@
       <option name="presentableId" value="Default" />
       <updated>1579386325984</updated>
     </task>
+    <task id="LOCAL-00001" summary="prediction stream">
+      <created>1579579025320</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1579579025320</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="prediction stream" />
+    <option name="LAST_COMMIT_MESSAGE" value="prediction stream" />
+  </component>
   <component name="WindowStateProjectService">
-    <state x="25" y="343" width="854" height="397" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1579578992356">
+    <state x="25" y="343" width="854" height="397" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1579632182694">
       <screen x="0" y="27" width="1680" height="1023" />
     </state>
-    <state x="25" y="343" width="854" height="397" key="#com.intellij.fileTypes.FileTypeChooser/0.27.1680.1023@0.27.1680.1023" timestamp="1579578992356" />
-    <state width="1067" height="266" key="GridCell.Tab.0.bottom" timestamp="1579578883794">
+    <state x="25" y="343" width="854" height="397" key="#com.intellij.fileTypes.FileTypeChooser/0.27.1680.1023@0.27.1680.1023" timestamp="1579632182694" />
+    <state x="151" y="135" width="777" height="814" key="CommitChangelistDialog2" timestamp="1579579025194">
       <screen x="0" y="27" width="1680" height="1023" />
     </state>
-    <state width="1067" height="266" key="GridCell.Tab.0.bottom/0.27.1680.1023@0.27.1680.1023" timestamp="1579578883794" />
-    <state width="1067" height="266" key="GridCell.Tab.0.center" timestamp="1579578883794">
+    <state x="151" y="135" width="777" height="814" key="CommitChangelistDialog2/0.27.1680.1023@0.27.1680.1023" timestamp="1579579025194" />
+    <state width="1508" height="266" key="GridCell.Tab.0.bottom" timestamp="1579635819312">
       <screen x="0" y="27" width="1680" height="1023" />
     </state>
-    <state width="1067" height="266" key="GridCell.Tab.0.center/0.27.1680.1023@0.27.1680.1023" timestamp="1579578883794" />
-    <state width="1067" height="266" key="GridCell.Tab.0.left" timestamp="1579578883794">
+    <state width="1508" height="266" key="GridCell.Tab.0.bottom/0.27.1680.1023@0.27.1680.1023" timestamp="1579635819312" />
+    <state width="1508" height="266" key="GridCell.Tab.0.center" timestamp="1579635819312">
       <screen x="0" y="27" width="1680" height="1023" />
     </state>
-    <state width="1067" height="266" key="GridCell.Tab.0.left/0.27.1680.1023@0.27.1680.1023" timestamp="1579578883794" />
-    <state width="1067" height="266" key="GridCell.Tab.0.right" timestamp="1579578883794">
+    <state width="1508" height="266" key="GridCell.Tab.0.center/0.27.1680.1023@0.27.1680.1023" timestamp="1579635819312" />
+    <state width="1508" height="266" key="GridCell.Tab.0.left" timestamp="1579635819312">
       <screen x="0" y="27" width="1680" height="1023" />
     </state>
-    <state width="1067" height="266" key="GridCell.Tab.0.right/0.27.1680.1023@0.27.1680.1023" timestamp="1579578883794" />
+    <state width="1508" height="266" key="GridCell.Tab.0.left/0.27.1680.1023@0.27.1680.1023" timestamp="1579635819312" />
+    <state width="1508" height="266" key="GridCell.Tab.0.right" timestamp="1579635819312">
+      <screen x="0" y="27" width="1680" height="1023" />
+    </state>
+    <state width="1508" height="266" key="GridCell.Tab.0.right/0.27.1680.1023@0.27.1680.1023" timestamp="1579635819312" />
     <state x="329" y="173" width="1022" height="737" key="SettingsEditor" timestamp="1579467816735">
       <screen x="0" y="27" width="1680" height="1023" />
     </state>
     <state x="329" y="173" width="1022" height="737" key="SettingsEditor/0.27.1680.1023@0.27.1680.1023" timestamp="1579467816735" />
-    <state x="496" y="366" key="com.intellij.ide.util.TipDialog" timestamp="1579567933593">
+    <state x="496" y="366" key="com.intellij.ide.util.TipDialog" timestamp="1579628005261">
       <screen x="0" y="27" width="1680" height="1023" />
     </state>
-    <state x="496" y="366" key="com.intellij.ide.util.TipDialog/0.27.1680.1023@0.27.1680.1023" timestamp="1579567933593" />
+    <state x="496" y="366" key="com.intellij.ide.util.TipDialog/0.27.1680.1023@0.27.1680.1023" timestamp="1579628005261" />
   </component>
 </project>

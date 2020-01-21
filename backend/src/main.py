@@ -14,22 +14,31 @@ import random
 import tensorflow as tf
 import json
 
+app = Flask(__name__)
+
+# temporary data bas for storing images
+app.config["UPLOAD_FOLDER"] = "static/"
+api = Api(app)
+
 config = credentials.Certificate("jsonconst/key.json")
 firebase_admin.initialize_app(config, {
     'storageBucket': 'niiwebsite-794a2.appspot.com',
     'databaseURL' : 'https://niiwebsite-794a2.firebaseio.com/'
 })
 ref = db.reference('filenames')
-print(ref.get())
+#print(ref.get())
 #file_ref = base.collection('filenames')
 niifiles = storage.bucket()
 STANDARD= dt.datetime(2030, month = 12, day = 30)
 
-app = Flask(__name__)
+MODEL_FILE = open(app.config["UPLOAD_FOLDER"] + "model.json")
+LOADED_MODEL = MODEL_FILE.read()
+MODEL_FILE.close()
+# MODEL = tf.keras.models.model_from_json(LOADED_MODEL)
+# MODEL.load_weights(app.config["UPLOAD_FOLDER"] + "model.h5")
+# MODEL.summary()
 
- # temporary data bas for storing images
-app.config["UPLOAD_FOLDER"] = "static/"
-api = Api(app)
+
 
 @app.route('/')
 def index():
@@ -50,7 +59,7 @@ def getimg():
             #file = open(file, 'rb')
             file.save(app.config["UPLOAD_FOLDER"] + file.filename)
             name = add_file(file.filename, file.filename)
-            get_file(file.filename.replace('/', '~').replace('.', '>'), 'f')
+            get_nii(file.filename.replace('/', '~').replace('.', '>'), 'f')
             print(file.filename)
             return redirect(url_for('processnii', filename = file.filename))
 
@@ -72,8 +81,8 @@ def add_file(namedb, name, nchildname = None, delete = 't'):
     return ref.get()
 
 
-@app.route('/get_file/<namedb>/<show>')
-def get_file(namedb, show):
+@app.route('/get_nii/<namedb>/<show>')
+def get_nii(namedb, show):
     print("file", namedb)
     file = ref.child(namedb).get()
     fileblob = niifiles.get_blob(file['name'])
@@ -142,21 +151,57 @@ def processnii(filename):
 
 @app.route('/tfmaskproduce/<basename>')
 def tfmaskproduce(basename):
-    model_file = open(app.config["UPLOAD_FOLDER"] + "model.json")
-    loaded_model = model_file.read()
-    model_file.close()
+#     MODEL_FILE = open(app.config["UPLOAD_FOLDER"] + "model.json")
+#     LOADED_MODEL = MODEL_FILE.read()
+#     MODEL_FILE.close()
+#     MODEL = tf.keras.models.model_from_json(LOADED_MODEL)
+#     MODEL.load_weights(app.config["UPLOAD_FOLDER"] + "model.h5")
+#     MODEL.summary()
+    MODEL = tf.keras.models.model_from_json(LOADED_MODEL)
+    MODEL.load_weights(app.config["UPLOAD_FOLDER"] + "model.h5")
+    MODEL.summary()
+    filref = ref.child(basename)
+    print(type(filref.get()))
+    frefdat = filref.get()
+    flist = list(frefdat.keys())
+    data = None
+    dblob = None
+    affine = None
+    ablob = None
+    slice = None
+    sblob = None
+    for file in flist:
+        if "data" in file:
+            data = frefdat[file]['name']
+            filref.child(file).delete()
+        elif "affine" in file:
+            affine = frefdat[file]['name']
+            filref.child(file).delete()
+        elif "slice" in file:
+            slice = frefdat[file]['name']
+            filref.child(file).delete()
 
-    model = tf.keras.models.model_from_json(loaded_model)
-    model.load_weights(app.config["UPLOAD_FOLDER"] + "model.h5")
+    dblob = niifiles.get_blob(data)
+    dblob.download_to_filename(app.config["UPLOAD_FOLDER"] + data)
+    dblob.delete()
+    dblob = None
+    data = np.load(app.config["UPLOAD_FOLDER"] + data)
 
-    model.summary()
-    return basename
+    ablob = niifiles.get_blob(affine)
+    ablob.download_to_filename(app.config["UPLOAD_FOLDER"] + affine)
+    ablob.delete()
+    ablob = None
+    affine = np.load(app.config["UPLOAD_FOLDER"] + affine)
+
+    sblob = niifiles.get_blob(slice)
+    sblob.download_to_filename(app.config["UPLOAD_FOLDER"] + slice)
+    sblob = None
+    #slice = plt.imread(app.config["UPLOAD_FOLDER"] + data)
+    predictions = MODEL.predict(np.expand_dims(data, axis = -1))
+    print(predictions.shape)
 
 
-
-
-
-
+    return 'done'
 
 if __name__ == '__main__':
     app.run(debug = True)

@@ -13,9 +13,9 @@ from firebase_admin import firestore, initialize_app, db, storage
 import tensorflow as tf
 
 ## turn into a class based api with methods get post put etc.
-
+#####ERROR  ##### FIX !!!!!! FAILS IF THERE ARE 2 FILES WITH THW SAME NAME
 app = Flask(__name__)
-
+# implement error checking
 # temporary data bas for storing images
 app.config["UPLOAD_FOLDER"] = "static/"
 api = Api(app)
@@ -34,13 +34,6 @@ MODEL_FILE = open("jsonconst/model.json")
 LOADED_MODEL = MODEL_FILE.read()
 MODEL_FILE.close()
 MODEL = None
-
-@app.route('/')
-def index():
-    ref.delete()
-    files = niifiles.list_blobs()
-    niifiles.delete_blobs(files)
-    return render_template('base.html')
 
 def add_file(namedb, name, nchildname = None, delete = 't'):
     nii = niifiles.blob(namedb)
@@ -87,11 +80,11 @@ class processMask(Resource):
 
     def get(self, filename):
         basename = filename.replace('/', '~').replace('.', '>')
+
         gpus = tf.config.experimental.list_physical_devices('GPU')
         if len(gpus) != 0:
             for gpu in gpus:
                 tf.config.experimental.set_memory_growth(gpu, True)
-
         MODEL = tf.keras.models.model_from_json(LOADED_MODEL)
         # MODEL.load_weights(app.config["UPLOAD_FOLDER"] + "model.h5")
         MODEL.load_weights("jsonconst/model.h5")
@@ -145,7 +138,7 @@ class processMask(Resource):
 
         add_file(img, img, nchildname=basename)
         add_file(nfilename, nfilename, nchildname=basename)
-        return {basename: filref.get()}
+        return filref.get()#{basename: filref.get()}
 
     def put(self, filename):
         basename = filename.replace('/', '~').replace('.', '>')
@@ -192,7 +185,7 @@ class processMask(Resource):
         add_file(datafile + ".npy", datafile + ".npy", nchildname=basename)
 
         open = (img.replace('/', '~').replace('.', '>'))
-        return {basename: ref.child(basename).get()}  # redirect(url_for('tfmaskproduce', filename=filename))
+        return ref.child(basename).get()  # redirect(url_for('tfmaskproduce', filename=filename))
 
     def delete(self, filename):
         basename = filename.replace('/', '~').replace('.', '>')

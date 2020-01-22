@@ -1,14 +1,28 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <head>
     <meta charset="utf-8">
     <title></title>
   </head>
   <body>
-  <form action="http://localhost:5000/getimg" method="post" enctype="multipart/form-data">
+  <form action="http://localhost:5002/getimg" method="post" enctype="multipart/form-data" >
     <p>Input Image:</p>
-    <p><input type="file" name = "file"></p>
+    <p><input type="file" name = "file" id = "file"></p>
     <p><input type = "submit" value = "send"></p>
   </form>
+
+  {%if urlslice != 'None'%}
+    <img src="{{urlslice}}" alt="slice">
+  {%endif%}
+  {%if urlslice1 != 'None'%}
+    <img src="{{urlslice1}}" alt="slice">
+  {%endif%}
+
+  {% macro geturl1(urlslice) %}<img src="{{urlslice}}" alt="slice">{%endmacro%}
+  {% macro geturl2(urlslice1) %}<img src="{{urlslice1}}" alt="slice2">{%endmacro%}
+
+  </form>
+  </div>
   </body>
 </html>

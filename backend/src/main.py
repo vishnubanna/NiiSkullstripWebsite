@@ -1,5 +1,6 @@
-from flask import Flask, render_template, url_for, flash, redirect, request
+from flask import Flask, render_template, url_for, abort, flash, redirect, request
 from flask_restful import Resource, Api, reqparse
+from flask_cors import CORS
 from flask_jsonpify import jsonify
 import requests
 import numpy as np
@@ -15,6 +16,7 @@ import tensorflow as tf
 ## turn into a class based api with methods get post put etc.
 
 app = Flask(__name__)
+CORS(app)
 
 # temporary data bas for storing images
 app.config["UPLOAD_FOLDER"] = "static/"
@@ -57,6 +59,19 @@ def getimg():
             #get_nii(file.filename.replace('/', '~').replace('.', '>'), 'f')
             return redirect(url_for('processnii', filename = file.filename))
 
+@app.route('/getfrom')
+def getfrom(self):
+    print(request.files['file'])
+    file = request.files['file']
+    if "/" in file.filename:
+        abort(400, "no subdirectories allowed")
+
+    if file.filename == '':
+        abort(400, "no file selected")
+    if file:
+        file.save(app.config["UPLOAD_FOLDER"] + file.filename)
+    add_file(file.filename, file.filename)
+    return "",201
 
 def add_file(namedb, name, nchildname = None, delete = 't'):
     nii = niifiles.blob(namedb)
@@ -201,7 +216,7 @@ def tfmaskproduce(filename): #get
     add_file(nfilename, nfilename, nchildname=basename)
     return {basename : filref.get()}
 
-@app.route('/clear/<basename>')
+@app.route('/clear/<filename>')
 def clear(filename): #delete
     basename = filename.replace('/', '~').replace('.', '>')
     files = ref.child(basename)
@@ -224,4 +239,4 @@ def getnames(filename):
 
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = True, post = 5002)

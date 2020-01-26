@@ -1,8 +1,9 @@
-from flask import Flask, render_template, url_for, flash, redirect, request, abort
+from flask import Flask, render_template, url_for, flash, redirect, request, abort,jsonify,make_response
 from flask_restful import Resource, Api, reqparse
 from flask_restful.utils import cors
 from flask_cors import CORS, cross_origin
-from flask_jsonpify import jsonify
+#from flask_jsonpify import jsonify
+import json
 import requests
 import numpy as np
 import nibabel as nb
@@ -22,14 +23,6 @@ app = Flask(__name__)
 # temporary data bas for storing images
 app.config["UPLOAD_FOLDER"] = "static/"
 api = Api(app)
-
-# @app.after_request
-# def after_request(response):
-#     response.headers.add('Access-Control-Allow-Origin', '*')
-# #   response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-# #   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
-#     return response
-
 
 config = credentials.Certificate("jsonconst/key.json")
 firebase_admin.initialize_app(config, {
@@ -90,6 +83,7 @@ class processMask(Resource):
     @cors.crossdomain(origin='*')
     def options(self, filename):
         return {'Allow': 'PUT,GET,POST,DELETE'}, 200, {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'PUT,GET, POST,DELETE'}
+
     @cors.crossdomain(origin='*')
     def post(self, filename):
         if "/" in filename:
@@ -100,14 +94,68 @@ class processMask(Resource):
             abort(400, "no file selected")
         if file:
             file.save(app.config["UPLOAD_FOLDER"] + file.filename)
-        add_file(file.filename, file.filename)
-        return "",201#, {'Access-Control-Allow-Origin': '*'}
+        #add_file(file.filename, file.filename)
+
+        basename = file.filename.replace('/', '~').replace('.', '>')
+        nii = nb.load(app.config["UPLOAD_FOLDER"] + filename)
+        niidata = nb.Nifti1Image(nii.dataobj, nii.affine)
+        npaffine = nii.affine
+        shift = 0  # 20
+        bshift = 0  # 75
+        img = None
+
+        volume = niidata.get_fdata()
+        img = basename + "_slice.png"
+        plt.imsave(app.config["UPLOAD_FOLDER"] + img, volume[90, :, :])
+
+        volume = np.transpose(volume, (0, 2, 1))
+        data_in = np.zeros((256 - (shift + bshift), 256, 192), dtype=np.float16)
+        counter = 0
+
+        for i in range(shift, volume.shape[2] - bshift):
+            h2 = volume[:, :, i]
+
+            if np.max(h2) > 0:
+                h2 = h2 / np.max(h2)
+            else:
+                h2 = h2 * 0
+
+            data_in[counter, :, :] = np.expand_dims(h2, axis=0)
+            counter += 1
+        h2 = None
+
+        affinefile = basename + '_affine'
+        datafile = basename + '_data'
+
+        np.save(app.config["UPLOAD_FOLDER"] + affinefile, npaffine)
+        np.save(app.config["UPLOAD_FOLDER"] + datafile, data_in)
+
+        # remove of file from server
+        try:
+            os.remove(app.config["UPLOAD_FOLDER"] + filename)
+        except:
+            print(f"{filename} non existent")
+
+        # add all files
+        add_file(img, img, nchildname=basename)
+        add_file(affinefile + ".npy", affinefile + ".npy", nchildname=basename)
+        add_file(datafile + ".npy", datafile + ".npy", nchildname=basename)
+
+        open = (img.replace('/', '~').replace('.', '>'))
+        valret = dict(ref.child(basename).get())
+        try:
+            valurl = valret[basename + "_slice>png"]['url']
+        except:
+            valurl = None
+        print(valurl)
+        return json.dumps({'url':valurl}), 201#ref.child(basename).get(), 201#, {'Access-Control-Allow-Origin': '*'}
 
     #@cross_origin()
-    #@cors.crossdomain(origin='*')
+    @cors.crossdomain(origin='*')
     def get(self, filename):
-        basename = filename.replace('/', '~').replace('.', '>')
 
+        basename = filename.replace('/', '~').replace('.', '>')
+        print(basename)
         gpus = tf.config.experimental.list_physical_devices('GPU')
         if len(gpus) != 0:
             for gpu in gpus:
@@ -157,80 +205,52 @@ class processMask(Resource):
         dbolb = np.transpose(dblob, tpose)
         predictions = np.transpose(predictions * dblob, tpose)
         plt.imsave(app.config["UPLOAD_FOLDER"] + img, predictions[90, :, :])
+        #if (ablob):
+        print(ablob)
         niinew = nb.Nifti1Image(predictions, ablob)
         nb.save(niinew, app.config["UPLOAD_FOLDER"] + nfilename)
 
-        os.remove(app.config["UPLOAD_FOLDER"] + data)
-        os.remove(app.config["UPLOAD_FOLDER"] + affine)
+        try:
+            os.remove(app.config["UPLOAD_FOLDER"] + data)
+        except:
+            print(f"{data} non existent")
+        try:
+            os.remove(app.config["UPLOAD_FOLDER"] + affine)
+        except:
+            print(f"{affine} non existent")
 
         add_file(img, img, nchildname=basename)
         add_file(nfilename, nfilename, nchildname=basename)
-        return jsonify(filref.get()), 201#, {'Access-Control-Allow-Origin': '*'}#{basename: filref.get()}
+        valret = dict(filref.get())
+        valurl = valret[basename + "_sliceog>png"]['url']
+        maskurl = valret[basename + "_mask>nii>gz"]['url']
+        print({'url':valurl, 'maskUrl':maskurl})
+        return json.dumps({'url':valurl, 'maskUrl':maskurl}), 201#, {'Access-Control-Allow-Origin': '*'}#{basename: filref.get()}
 
     #@cross_origin()
     #@cors.crossdomain(origin='*')
-    def put(self, filename):
-        basename = filename.replace('/', '~').replace('.', '>')
-        get_nii(basename, 'f')
-        nii = nb.load(app.config["UPLOAD_FOLDER"] + filename)
-        niidata = nb.Nifti1Image(nii.dataobj, nii.affine)
-        npaffine = nii.affine
-        shift = 0  # 20
-        bshift = 0  # 75
-        img = None
 
-        volume = niidata.get_fdata()
-        img = basename + "_slice.png"
-        plt.imsave(app.config["UPLOAD_FOLDER"] + img, volume[90, :, :])
-
-        volume = np.transpose(volume, (0, 2, 1))
-        data_in = np.zeros((256 - (shift + bshift), 256, 192), dtype=np.float16)
-        counter = 0
-
-        for i in range(shift, volume.shape[2] - bshift):
-            h2 = volume[:, :, i]
-
-            if np.max(h2) > 0:
-                h2 = h2 / np.max(h2)
-            else:
-                h2 = h2 * 0
-
-            data_in[counter, :, :] = np.expand_dims(h2, axis=0)
-            counter += 1
-        h2 = None
-
-        affinefile = basename + '_affine'
-        datafile = basename + '_data'
-
-        np.save(app.config["UPLOAD_FOLDER"] + affinefile, npaffine)
-        np.save(app.config["UPLOAD_FOLDER"] + datafile, data_in)
-
-        # remove of file from server
-        os.remove(app.config["UPLOAD_FOLDER"] + filename)
-
-        # add all files
-        add_file(img, img, nchildname=basename)
-        add_file(affinefile + ".npy", affinefile + ".npy", nchildname=basename)
-        add_file(datafile + ".npy", datafile + ".npy", nchildname=basename)
-
-        open = (img.replace('/', '~').replace('.', '>'))
-        return ref.child(basename).get(), 201#, {'Access-Control-Allow-Origin': '*'}  # redirect(url_for('tfmaskproduce', filename=filename))
-
-    #@cors.crossdomain(origin='*')
+    @cors.crossdomain(origin='*')
     def delete(self, filename):
         basename = filename.replace('/', '~').replace('.', '>')
+        print(basename)
         files = ref.child(basename)
         vals = files.get()
-        flist = list(vals.keys())
-        hold = None
+        if not(vals == None):
+            flist = list(vals.keys())
+            hold = None
 
-        for file in flist:
-            hold = niifiles.get_blob(vals[file]["name"])
-            hold.delete()
-        files.delete()
-        return "", 201#, {'Access-Control-Allow-Origin': '*'}
+            for file in flist:
+                hold = niifiles.get_blob(vals[file]["name"])
+                if not(hold == None):
+                    hold.delete()
+            files.delete()
+            return "", 201#, {'Access-Control-Allow-Origin': '*'}
+        else:
+            abort(400, "cleared")
 
 api.add_resource(processMask, "/api/getmask/<filename>")
 
 if __name__ == '__main__':
     app.run(debug = True, port = 5002)
+    #app.run(debug=True, port=4200)

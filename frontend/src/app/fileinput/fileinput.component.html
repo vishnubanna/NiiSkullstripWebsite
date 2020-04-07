@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <div class = "downup">
+    <!-- <ngx-file-drop dropZoneLabel = "drop files" (onFileDrop) = "dropped($event)">
+      <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector">
+         temp
+      </ng-template>
+    </ngx-file-drop> -->
+    <div class="file-upload" >
+      <ngx-file-drop dropZoneLabel = "drop files" (onFileDrop) = "dropped($event)" dropZoneClassName="drag" contentClassName = "drag2">
+          <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector">
+              <label class="file-select" for = "dropnii">
+                <label for="dropnii" class="file-select-button" id = "filename" (drag) = "drag($event)">
+                  Choose File
+                </label>
+                <label for = "dropnii" class="file-select-name" name = "chooseFile" id = "chooseFile">
+                  {{fname}}
+                </label>
+                <input type="file" name="fileU" (change) = "onFileSelected($event)" class = "select" id = "dropnii" ondrop = "drag($event)">
+              </label>
+            </ng-template>
+        </ngx-file-drop>
+      </div>
+
+
+      <!--<label for="dropnii" class="floatingin">dropnii</label>-->
+      <br>
+      <div class=" output">
+        <button type="button" (click) = "onSubmit()" class = "upload">Upload</button>
+        <button type="button" (click) = "ondload()" class = "download">Download</button>
+        <br>
+        <span>{{loading}}</span>
+      </div>
+
+       <!-- change listener will trigger the upload when ever the upload button is clicked make async-->
+       <!-- uses listener called on file selected and passes the event object(jquery)-->
+       <br>
+       <div class="imgdisp">
+         <h1 class = "hiddentext">wait for the skull stripped slice to show before downloading...</h1>
+         <img  [src]="sliceog" alt="" class = "img">
+         <img  [src]="slice" alt="" class = "img">
+       </div>
+     </div>
+
+     <div class="links">
+       <br>
+       <span>Creator: Vishnu Banna</span>
+       <br>
+       <a href="https://github.com/vishnubanna">Github</a>
+       <br>
+       <a href = "https://www.linkedin.com/in/vishnubanna/">LinkedIn</a>
+       <br>
+     </div>
+  </body>
+</html>

@@ -18,7 +18,7 @@ import tensorflow as tf
 ## turn into a class based api with methods get post put etc.
 #####ERROR  ##### FIX !!!!!! FAILS IF THERE ARE 2 FILES WITH THW SAME NAME
 app = Flask(__name__)
-# CORS(app) # allows for websites without same url to make requests
+CORS(app) # allows for websites without same url to make requests
 # implement error checking
 # temporary data bas for storing images
 app.config["UPLOAD_FOLDER"] = "static/"
@@ -38,6 +38,19 @@ MODEL_FILE = open("jsonconst/model.json")
 LOADED_MODEL = MODEL_FILE.read()
 MODEL_FILE.close()
 MODEL = None
+
+ALLOWED_EXTENSIONS = {'nii', 'nii.gz'}
+
+
+# gpus = tf.config.experimental.list_physical_devices('GPU')
+# if len(gpus) != 0:
+#     for gpu in gpus:
+#         tf.config.experimental.set_memory_growth(gpu, True)
+#
+# MODEL = tf.keras.models.model_from_json(LOADED_MODEL)
+# # MODEL.load_weights(app.config["UPLOAD_FOLDER"] + "model.h5")
+# MODEL.load_weights("jsonconst/model.h5")
+# MODEL.summary()
 
 def add_file(namedb, name, nchildname = None, delete = 't'):
     nii = niifiles.blob(namedb)
@@ -77,29 +90,67 @@ def getnames(filename):
     flist = list(vals.keys())
     return flist
 
+def valid_load(filename):
+    try:
+        nii = nb.load(app.config["UPLOAD_FOLDER"] + filename)
+        return nii, 'nii'
+    except:
+        try:
+            os.remove(app.config["UPLOAD_FOLDER"] + filename)
+        except:
+            print(f"{filename} non existent")
+        return None, None
+
+    
 
 class processMask(Resource):
     # @cross_origin()
     @cors.crossdomain(origin='*')
     def options(self, filename):
-        return {'Allow': 'PUT,GET,POST,DELETE'}, 200, {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'PUT,GET, POST,DELETE'}
+        return {'Allow': 'GET,POST,DELETE'}, 200, {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,DELETE'}
 
-    @cors.crossdomain(origin='*')
+    @cors.crossdomain(origin='*', methods = 'GET, POST, DELETE')
     def post(self, filename):
+        tfilename = None
         if "/" in filename:
             abort(400, "no subdirectories allowed")
         print(request.files['file'])
         file = request.files['file']
         if file.filename == '':
             abort(400, "no file selected")
-        if file:
-            file.save(app.config["UPLOAD_FOLDER"] + file.filename)
-        #add_file(file.filename, file.filename)
 
+        tfilename = filename
         basename = file.filename.replace('/', '~').replace('.', '>')
-        nii = nb.load(app.config["UPLOAD_FOLDER"] + filename)
-        niidata = nb.Nifti1Image(nii.dataobj, nii.affine)
-        npaffine = nii.affine
+        count = 0
+
+        while ref.child(basename).get() != None:
+            flistrep = tfilename.split('.')
+            count += 1
+            flistrep[0] = flistrep[0] + str(count)
+            tfilename = ".".join(flistrep)
+            basename = tfilename.replace('/', '~').replace('.', '>')
+
+
+            #abort(400, "file with same name in memory, please wait")
+        if file:
+            file.save(app.config["UPLOAD_FOLDER"] + tfilename)
+        #add_file(file.filename, file.filename)
+        # try:
+        #     nii = nb.load(app.config["UPLOAD_FOLDER"] + tfilename)
+        # except:
+        #     try:
+        #         os.remove(app.config["UPLOAD_FOLDER"] + tfilename)
+        #     except:
+        #         print(f"{tfilename} non existent")
+        #     abort(400, "invalid file type")
+        file, type = valid_load(tfilename)
+
+        if (file == None):
+            abort(400, "invalid file type")
+        elif (file != None and type == "nii"):
+            niidata = nb.Nifti1Image(file.dataobj, file.affine)
+            npaffine = file.affine
+        
         shift = 0  # 20
         bshift = 0  # 75
         img = None
@@ -132,9 +183,9 @@ class processMask(Resource):
 
         # remove of file from server
         try:
-            os.remove(app.config["UPLOAD_FOLDER"] + filename)
+            os.remove(app.config["UPLOAD_FOLDER"] + tfilename)
         except:
-            print(f"{filename} non existent")
+            print(f"{tfilename} non existent")
 
         # add all files
         add_file(img, img, nchildname=basename)
@@ -148,18 +199,20 @@ class processMask(Resource):
         except:
             valurl = None
         print(valurl)
-        return json.dumps({'url':valurl}), 201#ref.child(basename).get(), 201#, {'Access-Control-Allow-Origin': '*'}
+        return json.dumps({'filename': tfilename, 'url':valurl}), 201 #, {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST,DELETE'}#ref.child(basename).get(), 201#, {'Access-Control-Allow-Origin': '*'}
 
     #@cross_origin()
-    @cors.crossdomain(origin='*')
+    @cors.crossdomain(origin='*', methods = 'GET, POST, DELETE')
     def get(self, filename):
-
+        print(filename)
         basename = filename.replace('/', '~').replace('.', '>')
         print(basename)
+
         gpus = tf.config.experimental.list_physical_devices('GPU')
         if len(gpus) != 0:
             for gpu in gpus:
                 tf.config.experimental.set_memory_growth(gpu, True)
+
         MODEL = tf.keras.models.model_from_json(LOADED_MODEL)
         # MODEL.load_weights(app.config["UPLOAD_FOLDER"] + "model.h5")
         MODEL.load_weights("jsonconst/model.h5")
@@ -189,6 +242,12 @@ class processMask(Resource):
         dblob.delete()
         dblob = None
         dblob = np.load(app.config["UPLOAD_FOLDER"] + data)
+
+        
+        if (np.max(dblob) > 0):
+            dblob = dblob / np.max(dblob)
+        else:
+            dblob = dblob * 0
 
         ablob = niifiles.get_blob(affine)
         ablob.download_to_filename(app.config["UPLOAD_FOLDER"] + affine)
@@ -225,29 +284,31 @@ class processMask(Resource):
         valurl = valret[basename + "_sliceog>png"]['url']
         maskurl = valret[basename + "_mask>nii>gz"]['url']
         print({'url':valurl, 'maskUrl':maskurl})
-        return json.dumps({'url':valurl, 'maskUrl':maskurl}), 201#, {'Access-Control-Allow-Origin': '*'}#{basename: filref.get()}
+        return json.dumps({'url':valurl, 'maskUrl':maskurl}), 201 #, {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST,DELETE'}#{basename: filref.get()}
 
     #@cross_origin()
     #@cors.crossdomain(origin='*')
 
-    @cors.crossdomain(origin='*')
+    @cors.crossdomain(origin='*', methods = 'GET, POST, DELETE')
     def delete(self, filename):
         basename = filename.replace('/', '~').replace('.', '>')
         print(basename)
         files = ref.child(basename)
+        print(files)
+        
         vals = files.get()
-        if not(vals == None):
+        if (vals != None):
             flist = list(vals.keys())
             hold = None
-
             for file in flist:
                 hold = niifiles.get_blob(vals[file]["name"])
                 if not(hold == None):
                     hold.delete()
             files.delete()
-            return "", 201#, {'Access-Control-Allow-Origin': '*'}
+            return "", 201 #, {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST,DELETE'}
         else:
-            abort(400, "cleared")
+            return "file not in database", 200
+            #abort(400, "cleared")
 
 api.add_resource(processMask, "/api/getmask/<filename>")
 

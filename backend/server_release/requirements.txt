@@ -1,0 +1,18 @@
+flask
+flask-cors
+numpy
+matplotlib
+sklearn
+tensorflow == 2.1.0
+nibabel
+sqlalchemy
+psycopg2-binary
+flask-jsonpify
+flask-sqlalchemy
+flask-restful
+flask-pymongo
+firebase
+python-jwt
+gcloud
+sseclient
+firebase-admin

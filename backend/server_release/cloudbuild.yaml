@@ -1,0 +1,7 @@
+# cloudbuild.yaml
+steps:
+  # build & push the container image
+- name: "gcr.io/kaniko-project/executor:latest"
+  args: ["--cache=true", "--cache-ttl=48h", "--destination=gcr.io/niiwebsite-794a2/skullstripbackend:latest"]
+#- name: "gcr.io/cloud-builders/gcloud"
+  #args: ['beta', 'run', 'deploy', 'mri-cleaner', '--image', 'gcr.io/niiwebsite-794a2/skullstripbackend:latest', '--region', 'us-central1', '--allow-unauthenticated', '--platform', 'managed', '--port', '8080']
